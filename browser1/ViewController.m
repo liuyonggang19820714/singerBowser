@@ -33,64 +33,77 @@
 
 @implementation ViewController
 
+#pragma mark 创建标题label懒加载
+-(UILabel*)titleL
+{
+    if (_titleL == nil) {
+        // 创建标题label
+        _titleL = [[UILabel alloc]initWithFrame:CGRectMake(60, 90, 200, 30)];
+        
+        _titleL.backgroundColor = [UIColor redColor];
+        
+        _titleL.textAlignment = NSTextAlignmentCenter;
+        [self.view addSubview:_titleL];
+    }
+    
+    return _titleL;
+}
+
+#pragma mark 创建UIImageView懒加载
+-(UIImageView*)imgView
+{
+    if (!_imgView) {
+        // 创建UIImageView
+        _imgView = [[UIImageView alloc]initWithFrame:CGRectMake(60, 120, 200, 200)];
+        
+        _imgView.backgroundColor = [UIColor redColor];
+        
+        _imgView.center = self.view.center;
+        
+        [self.view addSubview:_imgView];
+
+    }
+    
+    return _imgView;
+}
+
+#pragma mark 创建上一张按钮懒加载
+-(UIButton*)btnBack
+{
+    if (!_btnBack) {
+        // 添加上一张按钮
+        _btnBack = [[UIButton alloc]initWithFrame:CGRectMake(60, 360, 100, 40)];
+        _btnBack.backgroundColor = [UIColor blueColor];
+        [_btnBack setTitle:@"上一张" forState:UIControlStateNormal];
+        
+        [_btnBack addTarget:self action:@selector(back) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self.view addSubview:_btnBack];
+
+    }
+    return _btnBack;
+}
+
+#pragma mark 创建下一张按钮懒加载
+-(UIButton*)btnNext
+{
+    if (!_btnNext) {
+        // 添加下一张按钮
+        _btnNext = [[UIButton alloc]initWithFrame:CGRectMake(180, 360, 100, 40)];
+        _btnNext.backgroundColor = [UIColor blueColor];
+        [_btnNext setTitle:@"下一张" forState:UIControlStateNormal];
+        
+        [_btnNext addTarget:self action:@selector(next) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self.view addSubview:_btnNext];
+    }
+    
+    return _btnNext;
+}
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // 取出第一个元素
-    singerModel*model = self.arrayAll[0];
-    
-    
-    // 创建标题label
-    UILabel*titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(60, 90, 200, 30)];
-    
-    titleLabel.backgroundColor = [UIColor redColor];
-    
-    [self.view addSubview:titleLabel];
-    
-    self.titleL = titleLabel;
-    
-    // 显示歌手名称
-    NSString*strTitle = [NSString stringWithFormat:@"%@ %d/%d",model.name,1,self.arrayAll.count];
-    titleLabel.text = strTitle;
-    
-    titleLabel.textAlignment = NSTextAlignmentCenter;
-    
-    
-    // 创建UIImageView
-    UIImageView*imgView = [[UIImageView alloc]initWithFrame:CGRectMake(60, 120, 200, 200)];
-    
-    imgView.backgroundColor = [UIColor redColor];
-    
-    imgView.center = self.view.center;
-    
-    [self.view addSubview:imgView];
-    
-    self.imgView = imgView;
-    
-    imgView.image = [UIImage imageNamed:model.pic];
-    
-    // 添加上一张按钮
-    UIButton*btnBack = [[UIButton alloc]initWithFrame:CGRectMake(60, 360, 100, 40)];
-    btnBack.backgroundColor = [UIColor grayColor];
-    [btnBack setTitle:@"上一张" forState:UIControlStateNormal];
-    
-    [btnBack addTarget:self action:@selector(back) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self.view addSubview:btnBack];
-    
-    self.btnBack = btnBack;
-    
-    // 添加下一张按钮
-    UIButton*btnNext = [[UIButton alloc]initWithFrame:CGRectMake(180, 360, 100, 40)];
-    btnNext.backgroundColor = [UIColor grayColor];
-    [btnNext setTitle:@"下一张" forState:UIControlStateNormal];
-    
-    [btnNext addTarget:self action:@selector(next) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self.view addSubview:btnNext];
-    
-    self.btnNext = btnNext;
-    
+    [self showCurentPage:0];
     
 }
 
@@ -100,12 +113,7 @@
     if (self.iIndex > 0) {
         self.iIndex--;
         
-        singerModel*model = self.arrayAll[self.iIndex];
-        
-        NSString*strTitle = [NSString stringWithFormat:@"%@ %d/%d",model.name,self.iIndex +1,self.arrayAll.count];
-        self.titleL.text = strTitle;
-        
-        self.imgView.image = [UIImage imageNamed:model.pic];
+        [self showCurentPage:self.iIndex];
     }
     
 }
@@ -118,12 +126,45 @@
         // 翻下一页
         self.iIndex++;
         
-        singerModel*model = self.arrayAll[self.iIndex];
+        [self showCurentPage:self.iIndex];
+    }
+}
+
+#pragma mark 显示当前页
+-(void)showCurentPage:(int) iPage
+{
+    if (iPage>= 0 || iPage< self.arrayAll.count) {
         
-        NSString*strTitle = [NSString stringWithFormat:@"%@ %d/%d",model.name,self.iIndex +1,self.arrayAll.count];
+        singerModel*model = self.arrayAll[iPage];
+        
+        NSString*strTitle = [NSString stringWithFormat:@"%@ %d/%d",model.name,iPage +1,self.arrayAll.count];
         self.titleL.text = strTitle;
         
         self.imgView.image = [UIImage imageNamed:model.pic];
+        
+        // 如果当前显示的是第一张，前一站按钮不可用
+        if (iPage == 0) {
+            self.btnBack.enabled = NO;
+            self.btnBack.backgroundColor = [UIColor grayColor];
+        }
+        else
+        {
+            self.btnBack.enabled = YES;
+            self.btnBack.backgroundColor = [UIColor blueColor];
+        }
+        
+        if(iPage == self.arrayAll.count - 1)
+        {
+            self.btnNext.enabled = NO;
+            self.btnNext.backgroundColor = [UIColor grayColor];
+        }
+        else
+        {
+            self.btnNext.enabled = YES;
+            self.btnNext.backgroundColor = [UIColor blueColor];
+        }
+        
+        
 
     }
 }
